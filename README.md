@@ -18,7 +18,7 @@ A **task** is simply a top most level future. Exectors will poll on a list of ta
 
 A **waker** is an object that can later call a function on an object that will tell the executor "hey, put me back on your list of things to do!". It uses a lot of pointer magic and is argueably the most mind-bendy aspects of async-await (and the reason **woke** was written)!
 
-A **context** a context is simply a holder of a waker (and maybe other things in the future!). It's how the executor gives the waker to the future when it polls.
+A **context** is simply a holder of a waker (and maybe other things in the future!). It's how the executor gives the waker to the future when it polls.
 
 
 ## Usage
