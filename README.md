@@ -10,7 +10,7 @@ To see a complete async-await and executor check out the [howdy example](https:/
 
 This section is meant for people who are complete beginners.  
 
-A **future** is an object that usually starts some long term activity.  It can be asked about its current state (polling), returning either "Ready!" or "I'm still working, don't bother me!".  Futures can depend on other futures to complete, creating a chain of polling.
+A **future** is an object that usually starts some long term activity (like a timer!).  It can be asked about its current state (polling), returning either "Ready!" or "I'm still working, don't bother me!".  Futures can depend on other futures to complete, creating a chain of polling.
 
 An **executor** is an object that contains a list of futures that need to be polled. It goes through them one by one and asks "hey, are you done yet?" (polling). Each time a future is polled, the executor gives it a **waker**. 
 
