@@ -1,9 +1,9 @@
-use std::sync::Arc;
-use core::mem::ManuallyDrop;
 use core::marker::PhantomData;
-use core::ops::Deref;
 use core::mem;
-use core::task::{Waker, RawWaker, RawWakerVTable};
+use core::mem::ManuallyDrop;
+use core::ops::Deref;
+use core::task::{RawWaker, RawWakerVTable, Waker};
+use std::sync::Arc;
 
 pub trait Woke: Send + Sync {
     fn wake(self: Arc<Self>) {
@@ -28,9 +28,7 @@ where
 {
     let ptr = Arc::into_raw(wake) as *const ();
 
-    unsafe {
-        Waker::from_raw(RawWaker::new(ptr, waker_vtable::<W>()))
-    }
+    unsafe { Waker::from_raw(RawWaker::new(ptr, waker_vtable::<W>())) }
 }
 
 unsafe fn increase_refcount<T: Woke>(data: *const ()) {
@@ -92,12 +90,11 @@ impl Deref for WakerRef<'_> {
 #[inline]
 pub fn waker_ref<W>(wake: &Arc<W>) -> WakerRef<'_>
 where
-    W: Woke
+    W: Woke,
 {
     let ptr = (&**wake as *const W) as *const ();
 
-    let waker = ManuallyDrop::new(unsafe {
-        Waker::from_raw(RawWaker::new(ptr, waker_vtable::<W>()))
-    });
+    let waker =
+        ManuallyDrop::new(unsafe { Waker::from_raw(RawWaker::new(ptr, waker_vtable::<W>())) });
     WakerRef::new_unowned(waker)
 }
