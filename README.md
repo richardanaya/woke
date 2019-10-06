@@ -12,7 +12,7 @@ This section is meant for people who are complete beginners.
 
 A **future** is an object that usually starts some long term activity (like a timer!).  It can be asked about its current state (polling), returning either "Ready!" or "I'm still working, don't bother me!".  Futures can depend on other futures to complete, creating a chain of polling.
 
-An **executor** is an object that contains a list of futures that need to be polled. It goes through them one by one and asks "hey, are you done yet?" (polling). Each time a future is polled, the executor gives it a **waker**. 
+An **executor** is an object that contains a list of futures that need to be polled. It goes through them one by one and asks "hey, are you done yet?" (polling). Each time a future is polled, the executor gives it a **waker** so that the executor can check back in on it later when the future says its ready! 
 
 A **task** is simply a top most level future. Exectors will poll on a list of task futures that will poll their child executors. Don't worry though  `async { }` auto generates most of  that heirarchal future dependency magic!
 
