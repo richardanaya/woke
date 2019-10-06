@@ -4,7 +4,9 @@ from other developers in futures-rs (the license is in their names).
 The aim is to provide the most absolute minimal waker system and provide 
 clarity into how one of the most challenging parts of how async-await works.
 
-To see a complete async-await and executor check out the [howdy example](https://github.com/richardanaya/woke/blob/master/examples/howdy/src/main.rs)
+**Beginners:** To see a super simple single task executor check out the [example](https://github.com/richardanaya/woke/blob/master/examples/single_task_executor/src/main.rs)
+
+To see a complete multi task async-await and executor check out the [howdy example](https://github.com/richardanaya/woke/blob/master/examples/howdy/src/main.rs)
 
 ## How does Async-Await work?
 
