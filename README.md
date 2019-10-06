@@ -2,7 +2,7 @@ This project was created to ease other's journeys in creating
 their own custom async executors. The codebase respectifully derives
 from other developers in futures-rs (the license is in their names). 
 The aim is to provide the most absolute minimal waker system and provide 
-clarity into how one of the most challenging parts of async-await works.
+clarity into how one of the most challenging parts of how async-await works.
 
 ## Usage
 
