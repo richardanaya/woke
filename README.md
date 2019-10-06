@@ -6,6 +6,19 @@ clarity into how one of the most challenging parts of how async-await works.
 
 To see a complete async-await and executor check out the [howdy example](https://github.com/richardanaya/woke/blob/master/examples/howdy/src/main.rs)
 
+## How does Async-Await work?
+
+This section is meant for people who are complete beginners.  
+
+A **future** is an object that usually starts some long term activity.  It can be asked about its current state (polling), returning either "Ready!" or "I'm still working, don't bother me!".  Futures can depend on other futures to complete, creating a chain of polling.
+
+An **executor** is an object that contains a list of futures that need to be polled. It goes through them one by one and asks "hey, are you done yet?" (polling). Each time a future is polled, the executor gives it a **waker**. 
+
+A **task** is simply a top most level future. Exectors will poll on a list of task futures that will poll their child executors. Don't worry though  `async { }` auto generates most of  that heirarchal future dependency magic!
+
+A **waker** is an object that can later call a function on an object that will tell the executor "hey, put me back on your list of things to do!". It uses a lot of pointer magic and is argueably the most mind-bendy aspects of async-await (and the reason **woke** was written)!
+
+
 ## Usage
 
 Add this to your `Cargo.toml`:
