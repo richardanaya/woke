@@ -1,0 +1,9 @@
+[package]
+name = "woke"
+version = "0.0.1"
+authors = ["richard anaya"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
