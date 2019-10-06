@@ -12,17 +12,20 @@ use {
 };
 
 pub struct TimerFuture {
-    shared_state: Arc<Mutex<SharedState>>,
+    state: Arc<Mutex<TimerFutureState>>,
 }
 
 impl Future for TimerFuture {
     type Output = ();
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-        let mut shared_state = self.shared_state.lock().unwrap();
-        if shared_state.completed {
+        let mut state = self.state.lock().unwrap();
+
+        // if we are done, return Ready!
+        if state.completed {
             Poll::Ready(())
         } else {
-            shared_state.waker = Some(cx.waker().clone());
+            // if not, store that waker for later when we need it!
+            state.waker = Some(cx.waker().clone());
             Poll::Pending
         }
     }
@@ -30,59 +33,79 @@ impl Future for TimerFuture {
 
 impl TimerFuture {
     pub fn new(duration: Duration) -> Self {
-        let shared_state = Arc::new(Mutex::new(SharedState {
+        // create some state for us to pass around safely!
+        let state = Arc::new(Mutex::new(TimerFutureState {
             completed: false,
             waker: None,
         }));
 
-        let thread_shared_state = shared_state.clone();
+        let thread_state = state.clone();
         thread::spawn(move || {
+            // wait a bit
             thread::sleep(duration);
-            let mut shared_state = thread_shared_state.lock().unwrap();
-            shared_state.completed = true;
-            if let Some(waker) = shared_state.waker.take() {
-                std::mem::drop(shared_state);
+            let mut state = thread_state.lock().unwrap();
+
+            //mark as complete
+            state.completed = true;
+
+            // get that waker and wake our task up!
+            if let Some(waker) = state.waker.take() {
+                std::mem::drop(state);
                 waker.wake()
             }
         });
 
-        TimerFuture { shared_state }
+        TimerFuture { state }
     }
 }
 
-struct SharedState {
+struct TimerFutureState {
     completed: bool,
     waker: Option<Waker>,
 }
 
+// our executor just holds one task
 struct Executor {
     task: Option<Arc<Task>>,
 }
 
+// Our task holds onto a future the executor can poll
 struct Task {
     pub future: Mutex<Option<Pin<Box<dyn Future<Output = ()> + Send + 'static>>>>,
 }
 
+// specify how we want our tasks to wake up
 impl Woke for Task {
     fn wake_by_ref(_: &Arc<Self>) {
+        // run the executor again because something finished!
         Executor::run()
     }
 }
 
 impl Executor {
     fn spawn(future: impl Future<Output = ()> + 'static + Send) {
+        // store our task in global state
         let task = Arc::new(Task {
             future: Mutex::new(Some(Box::pin(future))),
         });
         let mut e = get_executor().lock().unwrap();
         e.task = Some(task);
+
+        // we drop this early because otherwise run() will cause a mutex lock
+        std::mem::drop(e);
+
+        // get things going!
+        Executor::run();
     }
     fn run() {
+        // get our task from global state
         let e = get_executor().lock().unwrap();
         if let Some(task) = &e.task {
             let mut future_slot = task.future.lock().unwrap();
             if let Some(mut future) = future_slot.take() {
+                // make a waker for our task
                 let waker = waker_ref(&task);
+                // poll our future and give it a waker
                 let context = &mut Context::from_waker(&*waker);
                 if let Poll::Pending = future.as_mut().poll(context) {
                     *future_slot = Some(future);
@@ -92,6 +115,7 @@ impl Executor {
     }
 }
 
+// get a global holder of our one task
 fn get_executor() -> &'static Mutex<Executor> {
     static INSTANCE: OnceCell<Mutex<Executor>> = OnceCell::new();
     INSTANCE.get_or_init(|| Mutex::new(Executor { task: None }))
@@ -102,9 +126,11 @@ fn main() {
         println!("howdy!");
         TimerFuture::new(Duration::new(2, 0)).await;
         println!("done!");
+
+        // now we can exit
         std::process::exit(0);
     });
-    loop {
-        Executor::run();
-    }
+
+    // prevent exiting immediately
+    loop {}
 }
