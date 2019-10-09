@@ -1,9 +1,11 @@
+#![no_std]
+extern crate alloc;
 use core::marker::PhantomData;
 use core::mem;
 use core::mem::ManuallyDrop;
 use core::ops::Deref;
 use core::task::{RawWaker, RawWakerVTable, Waker};
-use std::sync::Arc;
+use alloc::sync::Arc;
 
 pub trait Woke: Send + Sync {
     fn wake(self: Arc<Self>) {
