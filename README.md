@@ -1,5 +1,5 @@
 This project was created to ease other's journeys in creating
-their own custom async executors. The codebase respectifully derives
+their own custom async executors. The code base respectfully derives
 from other developers in futures-rs (the license is in their names). 
 The aim is to provide the most absolute minimal waker system and provide 
 clarity into how one of the most challenging parts of how async-await works.
@@ -16,9 +16,9 @@ A **future** is an object that usually starts some long term activity (like a ti
 
 An **executor** is an object that contains a list of futures that need to be polled. It goes through them one by one and asks "hey, are you done yet?" (polling). Each time a future is polled, the executor gives it a **waker** so that the executor can check back in on it later when the future says its ready! 
 
-A **task** is simply a top most level future. Exectors will poll on a list of task futures that will poll their child executors. Don't worry though  `async { }` auto generates most of  that heirarchal future dependency magic!
+A **task** is simply a top most level future. Executors will poll on a list of task futures that will poll their child executors. Don't worry though  `async { }` auto generates most of  that heirarchal future dependency magic!
 
-A **waker** is an object that can later call a function on an object that will tell the executor "hey, put me back on your list of things to do!". It uses a lot of pointer magic and is argueably the most mind-bendy aspects of async-await (and the reason **woke** was written)!
+A **waker** is an object that can later call a function on an object that will tell the executor "hey, put me back on your list of things to do!". It uses a lot of pointer magic and is arguably the most mind-bendy aspects of async-await (and the reason **woke** was written)!
 
 A **context** is simply a holder of a waker (and maybe other things in the future!). It's how the executor gives the waker to the future when it polls.
 
