@@ -29,7 +29,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-woke = "0.0.3"
+woke = "0.0.4"
 ```
 The current `async-await` feature requires Rust 1.39 or later.
 
