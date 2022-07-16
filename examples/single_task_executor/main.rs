@@ -1,4 +1,3 @@
-use once_cell::sync::OnceCell;
 use {
     std::{
         future::Future,
@@ -88,7 +87,7 @@ impl Executor {
         let task = Arc::new(Task {
             future: Mutex::new(Some(Box::pin(future))),
         });
-        let mut e = get_executor().lock().unwrap();
+        let mut e = EXECUTOR.lock().unwrap();
         e.task = Some(task);
 
         // we drop this early because otherwise run() will cause a mutex lock
@@ -99,7 +98,7 @@ impl Executor {
     }
     fn run() {
         // get our task from global state
-        let e = get_executor().lock().unwrap();
+        let e = EXECUTOR.lock().unwrap();
         if let Some(task) = &e.task {
             let mut future_slot = task.future.lock().unwrap();
             if let Some(mut future) = future_slot.take() {
@@ -115,11 +114,7 @@ impl Executor {
     }
 }
 
-// get a global holder of our one task
-fn get_executor() -> &'static Mutex<Executor> {
-    static INSTANCE: OnceCell<Mutex<Executor>> = OnceCell::new();
-    INSTANCE.get_or_init(|| Mutex::new(Executor { task: None }))
-}
+static EXECUTOR: Mutex<Executor> = Mutex::new(Executor { task: None });
 
 fn main() {
     Executor::spawn(async {
